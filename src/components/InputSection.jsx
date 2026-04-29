@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { analyzeResume } from "../services/api";
+import { analyzeResume } from "../services/Api";
 import Loader from "./Loader";
 import Results from "./Results";
 
