@@ -3,7 +3,7 @@ import cors from "cors";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 import multer from "multer";
-import pdf from "pdf-parse/lib/pdf-parse.js"; // ✅ FIXED
+import pdf from "pdf-parse";
 
 dotenv.config();
 
@@ -40,7 +40,7 @@ app.post("/analyze-pdf", upload.single("file"), async (req, res) => {
     const jobDesc = req.body.jobDesc || "";
 
     // ✅ Extract text from PDF
-    const pdfData = await pdf(req.file.buffer);
+    const pdfData = await pdf.default(req.file.buffer);
     const resumeText = pdfData.text;
 
     // ✅ Call OpenAI
