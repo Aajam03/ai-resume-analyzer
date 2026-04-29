@@ -3,10 +3,7 @@ import cors from "cors";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 import multer from "multer";
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
-const pdf = require("pdf-parse");
+import pdf from "pdf-parse/lib/pdf-parse.js"; // ✅ FIXED
 
 dotenv.config();
 
