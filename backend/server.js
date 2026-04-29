@@ -35,7 +35,6 @@ app.post("/analyze-pdf", upload.single("file"), async (req, res) => {
   console.log("BODY:", req.body);
 
   try {
-    // ✅ Validation
     if (!req.file) {
       return res.status(400).json({
         matchingSkills: [],
@@ -44,26 +43,18 @@ app.post("/analyze-pdf", upload.single("file"), async (req, res) => {
       });
     }
 
-    // ✅ Ensure pdf is loaded
-    if (!pdf) {
-      return res.status(500).json({
-        matchingSkills: [],
-        missingSkills: [],
-        suggestions: ["PDF parser not initialized"],
-      });
-    }
+    // ✅ Skip PDF parsing (fix crash)
+    console.log("PDF received:", req.file.originalname);
 
-    const jobDesc = req.body.jobDesc || "";
-
-    // ✅ Extract text from PDF
-    const pdfData = await pdf(req.file.buffer);
-    const resumeText = pdfData.text.slice(0, 3000); // limit for safety
-
-    // ✅ MOCK RESPONSE (stable for deployment)
+    // ✅ Mock response
     const data = {
       matchingSkills: ["React", "JavaScript"],
       missingSkills: ["TypeScript", "Next.js"],
-      suggestions: ["Improve resume", "Add projects"],
+      suggestions: [
+        "Improve resume formatting",
+        "Add measurable achievements",
+        "Include more projects",
+      ],
     };
 
     return res.json(data);
@@ -74,11 +65,10 @@ app.post("/analyze-pdf", upload.single("file"), async (req, res) => {
     return res.status(500).json({
       matchingSkills: [],
       missingSkills: [],
-      suggestions: ["PDF processing failed"],
+      suggestions: ["Server error"],
     });
   }
 });
-
 app.listen(5000, () => {
   console.log("Server running on http://localhost:5000");
 });
