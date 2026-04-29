@@ -1,5 +1,5 @@
 export const analyzeResume = async (resume, jobDesc) => {
-  const res = await fetch("http://localhost:5000/analyze", {
+  const res = await fetch("https://ai-resume-analyzer-h723.onrender.com/analyze-pdf", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
