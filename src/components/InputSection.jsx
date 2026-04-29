@@ -24,7 +24,7 @@ const handleAnalyze = async () => {
     if (file) {
       // send file
       const formData = new FormData();
-      formData.append("resume", file);
+      formData.append("file", file);
       formData.append("jobDesc", jobDesc);
 
       const res = await fetch("https://ai-resume-analyzer-h723.onrender.com/analyze-pdf", {
