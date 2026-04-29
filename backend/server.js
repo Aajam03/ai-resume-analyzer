@@ -3,7 +3,6 @@ import cors from "cors";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 import multer from "multer";
-import pdf from "pdf-parse";
 
 dotenv.config();
 
@@ -16,6 +15,14 @@ const upload = multer();
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+// ✅ FIX: dynamic import for pdf-parse (works on Render)
+let pdf;
+
+(async () => {
+  const module = await import("pdf-parse");
+  pdf = module.default || module;
+})();
 
 // Test route
 app.get("/", (req, res) => {
@@ -37,69 +44,22 @@ app.post("/analyze-pdf", upload.single("file"), async (req, res) => {
       });
     }
 
+    // ✅ Ensure pdf is loaded
+    if (!pdf) {
+      return res.status(500).json({
+        matchingSkills: [],
+        missingSkills: [],
+        suggestions: ["PDF parser not initialized"],
+      });
+    }
+
     const jobDesc = req.body.jobDesc || "";
 
     // ✅ Extract text from PDF
-    const pdfData = await pdf.default(req.file.buffer);
-    const resumeText = pdfData.text;
+    const pdfData = await pdf(req.file.buffer);
+    const resumeText = pdfData.text.slice(0, 3000); // limit for safety
 
-    // ✅ Call OpenAI
-    //     const response = await openai.chat.completions.create({
-    //       model: "gpt-4.1-mini",
-    //       messages: [
-    //         {
-    //           role: "user",
-    //           content: `Compare this resume and job description.
-
-    // Resume:
-    // ${resumeText}
-
-    // Job Description:
-    // ${jobDesc}
-
-    // Return ONLY JSON:
-    // {
-    //   "matchingSkills": [],
-    //   "missingSkills": [],
-    //   "suggestions": []
-    // }`,
-    //         },
-    //       ],
-    //     });
-
-    //     const text = response.choices[0].message.content;
-    //     console.log("AI RESPONSE:", text);
-
-    //     let data;
-
-    //     try {
-    //       const cleanText = text.replace(/```json|```/g, "").trim();
-    //       data = JSON.parse(cleanText);
-    //     } catch (err) {
-    //       console.error("JSON PARSE ERROR:", text);
-
-    //       return res.json({
-    //         matchingSkills: [],
-    //         missingSkills: [],
-    //         suggestions: ["AI response parsing failed"],
-    //       });
-    //     }
-
-    //     // ✅ Safe fallback structure
-    //     data.matchingSkills = Array.isArray(data.matchingSkills)
-    //       ? data.matchingSkills
-    //       : [];
-
-    //     data.missingSkills = Array.isArray(data.missingSkills)
-    //       ? data.missingSkills
-    //       : [];
-
-    //     data.suggestions = Array.isArray(data.suggestions)
-    //       ? data.suggestions
-    //       : [];
-
-    //     return res.json(data);
-
+    // ✅ MOCK RESPONSE (stable for deployment)
     const data = {
       matchingSkills: ["React", "JavaScript"],
       missingSkills: ["TypeScript", "Next.js"],
@@ -107,13 +67,14 @@ app.post("/analyze-pdf", upload.single("file"), async (req, res) => {
     };
 
     return res.json(data);
+
   } catch (error) {
     console.error("SERVER ERROR:", error);
 
     return res.status(500).json({
       matchingSkills: [],
       missingSkills: [],
-      suggestions: ["PDF processing or AI failed"],
+      suggestions: ["PDF processing failed"],
     });
   }
 });
